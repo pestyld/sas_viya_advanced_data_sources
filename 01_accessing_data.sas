@@ -1,5 +1,5 @@
 /****************************************************
- ACCESS DATA BASIC SOURCES USING SAS                                           
+ ACCESS BASIC DATA SOURCES USING SAS9                                           
 *****************************************************  
 > 1. Base SAS Engine  
 > 2. CSV File                         
@@ -13,12 +13,8 @@
  SET PATH TO WORKSHOP ROOT FOLDER
  Dynamically finds the current working folder.
 **********************************************/
-%let fileName =  /%scan(&_sasprogramfile,-1,'/');  
-%let path = %sysfunc(tranwrd(&_sasprogramfile, &fileName,));
+%getcwd(path)
 %put &=path;
-
-/* Create utility macros */
-%include "&path./utility_macros/utility_macros.sas";
 
 
 
@@ -53,11 +49,12 @@ run;
 /**********************
  2. IMPORT CSV FILE    
 **********************/
-/* Import the home_equity.csv file as a SAS table (pd.read_csv) */
+/* Import the home_equity.csv file as a SAS table */
+/* Creates the DATA step code to read the CSV file. You can copy/paste and modify it if necessary */
 proc import datafile="&path./data/home_equity.csv"
             dbms=csv
             out=work.import_csv;
-	guessingrows=max;
+	guessingrows=max; /* MAX scans all rows. Not efficient for large data. Default scan 20 rows. */
 run;
 
 proc print data=work.import_csv(obs=10);
@@ -72,10 +69,11 @@ run;
  3. READ EXCEL FILES  
  - 2 methods       
 **************************/
-/* 1 .Import the home_equity.csv file as a SAS table (read_excel) */
+/* 1 .Import a worksheet from the workbook as a SAS table */
 proc import datafile="&path./data/home_equity.xlsx"
             dbms=xlsx
             out=work.import_xlsx;
+	sheet='home_equity';
 run;
 
 proc print data=work.import_xlsx(obs=10);
@@ -85,7 +83,11 @@ run;
 
 
 
-/* 2. Connect directly to the XLSX file */
+/* 2. Connect directly to the XLSX file using the LIBNAME engine */
+/* This method accesses every worksheet in the workbook if it contains multiple worksheets */
+/* Enables you to read from and write to the same workbook */
+
+/* Connect to the Excel workbook directly and treat it as a SAS library */
 libname myxl xlsx "&path./data/home_equity.xlsx";
 
 proc print data=myxl.home_equity(obs=10);
@@ -94,19 +96,21 @@ run;
 proc contents data=myxl.home_equity;
 run;
 
+/* Write back to the same Excel workbook as a new worksheet */
+data myxl.bad_1;          /* Create new worksheet in Excel */
+	set myxl.home_equity; /* read from Excel */
+	where BAD=1;
+run;
+
 
 /* Create a new XLSX file name home_equity_final.xlsx */
 libname outxl xlsx "&path./data/home_equity_final.xlsx";
 
-data outxl.bad_0;         /* Create new worksheet in Excel */
+data outxl.bad_0;         /* Create new worksheet in a new Excel workbook */
 	set myxl.home_equity; /* read from Excel */
 	where BAD=0;
 run;
 
-data outxl.bad_1;         /* Create new worksheet in Excel */
-	set myxl.home_equity; /* read from Excel */
-	where BAD=1;
-run;
 
 /* Close Excel connectionS */
 libname outxl clear;
@@ -130,7 +134,7 @@ data _null_;
 run;
 
 /* Use the JSON engine */
-libname myjson JSON fileref=jsonfile;
+libname myjson JSON fileref=jsonfile noalldata;
 
 /* Many JSON files can include a lot of information. This is a simple flat table */                  
 proc contents data=myjson._all_;
@@ -148,6 +152,7 @@ libname myjson clear;
  5. READ DATABASE DATA
 *********************************/
 /* add code */
+
 
 
 /* CLASSES */

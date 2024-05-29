@@ -6,81 +6,105 @@
 **************************************************************************************************/
 
 /******************************************
- Load the sample file into memory in CAS 
+ a. Load the sample file into memory in CAS 
 ******************************************/
-proc cas;
-	table.loadTable /
-		path='WARRANTY_CLAIMS_0117.sashdat', caslib='samples',
-        casout={name='warranty_claims', 
-                caslib='casuser',
-                replace=True};
+proc casutil;
+	load casdata='WARRANTY_CLAIMS_0117.sashdat' incaslib='samples'
+		 casout='warranty_claims' outcaslib='casuser' 
+		 replace;
 quit;
 
 
 
 /******************************************
- Rename columns to more readable names 
+ b. Rename and drop columns for a smaller, cleaner table
 ******************************************/
 proc cas;
 	/* Specify the CAS table */
 	castbl = {name='warranty_claims', caslib='casuser'};
 
-	/* Clean up column names */
-	table.columnInfo result=ci / table=castbl;
+	/* 
+		Clean up column names 
+	*/
+	table.columnInfo result=ci / table=castbl; /* Obtain column names */
+	print ci; /*View results */
+
+	/* Create a list of dictionaries to rename columns using the labels */
 	renameColumns = {};
 	do col over ci['ColumnInfo'];
 		colName = col['Column'];
 		newColName = tranwrd(col['Label'],' ','_');
 		renameColumns = renameColumns || {{name=colName, rename=newColName}};
 	end;
+	print renameColumns;/*View results */
 
 	/* Rename and drop columns */
     keepColumns = {'Campaign_Type', 'Platform','Trim_Level','Make','Model_Year','Engine_Model',
                    'Vehicle_Assembly_Plant','Claim_Repair_Start_Date', 'Claim_Repair_End_Date'};
 
+	/* Execute rename */
 	table.alterTable / 
 		name=castbl['name'], 
 		caslib=castbl['caslib'], 
 		columns=renameColumns
 		keep=keepColumns;
+
+	/* Confirm column names */
+	table.columnInfo / table=castbl;
 quit;
 
 
 
 /*******************************************************************
- Create a subdirectory in Casuser and save mutliple CSV files in it 
+ c. Create a subdirectory in Casuser and save mutliple files in it
+    based on each year.
 ********************************************************************/
+
+/* Create a subdirectory in the Casuser caslib named csv_file_blogs */
+proc cas;
+	table.addCaslibSubdir / name = 'casuser', path = 'multiple_files';
+quit;
+
+/* Confirm subdirectory was created */
+proc casutil;
+	list files;
+quit;
+
+
+/* Create files in subdirectory */
 proc cas;
 	castbl = {name='warranty_claims', caslib='casuser'};
 
-/* Create a subdirectory in the Casuser caslib named csv_file_blogs */
-	table.addCaslibSubdir / name = 'casuser', path = 'csv_file_blogs' ;
- 
 /* Create a CSV file for each year */
 	simple.freq result=freq / table=castbl, inputs = 'Model_Year';  /* Find distinct years */
-	unique_years =  freq['Frequency'][,'CharVar'];               
+	unique_years =  freq['Frequency'][,'CharVar'];	
+	print unique_years;         
 
-/* Create each CAS table in the subdirectory */
+/* Create each parquet/csv file in the subdirectory */
+
+	/* Load function to save CAS table as flat files */
+ 	myFunctions = readpath("&path/utility_macros_func/utility_casl_func.sas");
+	execute(myFunctions);
+
 	do year over unique_years;
 		year = strip(year);
 		filter= {where=cats("Model_Year='",year,"'")};
-		
-		table.save / 
-			table=castbl || filter,
-			name='csv_file_blogs/warranty_claims_'||year||'.parquet', 
-            caslib='casuser', 
-            replace=TRUE;
+		print filter;
+		/* Create parquet/csv files */
+		create_files(castbl || filter, 'parquet');
+		create_files(castbl || filter, 'csv');
 	end;
 
 /* View the sub directory in the Casuser caslib */
-	table.fileInfo / allFiles = True, caslib = 'casuser';
+	table.fileInfo / allFiles = TRUE, caslib = 'casuser';
 
 /* View all files in the csv_file_blogs subdirectory */
-    table.fileInfo / path='csv_file_blogs', caslib='casuser';
+    table.fileInfo / path='multiple_files', caslib='casuser';
 quit;
 
+
 proc cas;
-	table.fileInfo / path='csv_file_blogs/warranty_claims_2015.parquet', caslib='casuser';
+	table.fileInfo / path='multiple_files', caslib='casuser';
 quit;
 
 
@@ -96,6 +120,9 @@ quit;
 
 
 quit;
+
+
+
     for year in list(castbl.Model_Year.unique()):      
         (cas_table_reference
          .query(f"Model_Year ='{year}'")
