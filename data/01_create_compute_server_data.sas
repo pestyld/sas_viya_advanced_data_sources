@@ -1,11 +1,36 @@
-/*******************************************************************************/
-/*  CREATE DEMONSTRATION DATA                                                  */
-/*******************************************************************************/
-/* REQUIREMENTS: SAS VIYA MUST BE ENABLED TO DOWNLOAD DATA FROM THE INTERNET   */
-/*******************************************************************************/
-/*  Copyright © 2024, SAS Institute Inc., Cary, NC, USA.  All Rights Reserved. */
-/*  SPDX-License-Identifier: Apache-2.0                                        */
-/*******************************************************************************/
+/****************************************************************************
+ CREATE DEMONSTRATION DATA FOR SAS COMPUTE SERVER                          
+*****************************************************************************
+ REQUIREMENTS: 
+	- SAS VIYA MUST BE ENABLED TO DOWNLOAD DATA FROM THE INTERNET  
+	- Must run the workshop.utility_macros_func/utility_macros.sas program prior
+*****************************************************************************
+ Creates the following files in the workshop/data folder
+- cars.sas7bdat
+- home_equity.csv
+- home_equity.json
+- home_equity.sas7bdat
+- home_equity.xlsx
+- us_data.sas7bdat
+*****************************************************************************
+ Copyright © 2024, SAS Institute Inc., Cary, NC, USA.  All Rights Reserved.
+ SPDX-License-Identifier: Apache-2.0                                       
+*****************************************************************************/
+
+
+/******************************************/
+/* FIND PATH FOR THE PROJECT FOLDER       */
+/******************************************/
+
+/* REQUIRED: Specify the location in your explorer where you want to create the data */
+%getcwd(datapath)
+
+/* Confirm the path is as expected */
+%put &=datapath;
+
+/* Create library for files */
+libname mydata "&datapath";
+
 
 
 /*****/
@@ -100,23 +125,3 @@ data mydata.cars;
 run;
 
 libname mydata clear;
-
-
-
-
-
-
-
-
-
-/*  Load the HOME_EQUITY into memory in the CASUSER caslib. */
-/*  Save HOME_EQUITY.sashdat in the CASUSER caslib so it is saved on disk.  */
-/*  */
-/* cas mysession; */
-/* proc casutil; */
-/*     droptable casdata="home_equity" incaslib="casuser" quiet; */
-/*     load data=work.home_equity outcaslib="casuser" casout="home_equity"; */
-/*     save casdata="home_equity" incaslib="casuser" casout="home_equity" outcaslib="casuser" replace; */
-/*     list files incaslib="casuser"; */
-/* quit; */
-/* cas mysession terminate; */

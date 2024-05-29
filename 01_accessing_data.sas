@@ -24,7 +24,7 @@
  - The SAS LIBNAME engine is a common interface into accessing different data sources 
  - Example: libname <library reference name> <engine to use> <connection information>; 
 ********************************************************************************************/
-%showImage("&path./images/WellsFargo SAS Viya Workshop.png")
+%showImage("&path./images/02_compute_libraries.png")
 
 
 
