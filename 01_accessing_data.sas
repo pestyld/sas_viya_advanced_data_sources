@@ -1,11 +1,11 @@
 /****************************************************
- ACCESS DATA SOURCES USING SAS                                           
+ ACCESS DATA BASIC SOURCES USING SAS                                           
 *****************************************************  
 > 1. Base SAS Engine  
 > 2. CSV File                         
 > 3. XLSX Engine                              
 > 4. JSON Engine                              
-> 5. Postgres Engine                                                         
+> 5. Database                                                         
 *****************************************************/
 
 
@@ -69,10 +69,23 @@ run;
 
 
 /**************************
- 3. READ XLSX FILES        
+ 3. READ EXCEL FILES  
+ - 2 methods       
 **************************/
+/* 1 .Import the home_equity.csv file as a SAS table (read_excel) */
+proc import datafile="&path./data/home_equity.xlsx"
+            dbms=xlsx
+            out=work.import_xlsx;
+run;
 
-/* Read an XLSX file */
+proc print data=work.import_xlsx(obs=10);
+run;
+proc contents data=work.import_xlsx;
+run;
+
+
+
+/* 2. Connect directly to the XLSX file */
 libname myxl xlsx "&path./data/home_equity.xlsx";
 
 proc print data=myxl.home_equity(obs=10);
@@ -95,10 +108,8 @@ data outxl.bad_1;         /* Create new worksheet in Excel */
 	where BAD=1;
 run;
 
-/* Close Excel connection */
+/* Close Excel connectionS */
 libname outxl clear;
-
-/* Clear the connection to the input Excel file */
 libname myxl clear;
 
 /* CLASSES */
@@ -110,8 +121,14 @@ libname myxl clear;
 /**************************
  4. READ JSON FILES        
 **************************/
-/* Reference the JSON file (import json) */
+/* Reference the JSON file */
 filename jsonfile "&path./data/home_equity.json";
+
+/* View the JSON file */
+data _null_;
+	viewJSON = jsonpp('jsonfile','log');
+run;
+
 /* Use the JSON engine */
 libname myjson JSON fileref=jsonfile;
 
