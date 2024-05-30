@@ -27,11 +27,26 @@
 
 
 /******************************************
+ 2. SAS VIYA AND CASLIB OVERVIEW     
+******************************************/
+/* SAS Viya Overview */
+%showImage("&path/images/02_SAS_Viya_Overview.png")
+
+/* Caslib Overview */
+%showImage("&path/images/03_caslibs.png")
+
+/* SAS Viya data access */
+%showImage("&path/images/04_caslibs_libnames.png")
+
+
+
+/******************************************
  2. LOAD A SAMPLE FILE INTO MEMORY (REVIEW)      
 ******************************************/
-/* (Review) Load a sample file into memory in CAS */
+/* View all available caslibs */
 caslib _all_ list;
 
+/* (Review) Load a sample file into memory in CAS */
 proc casutil;
 	load casdata='WARRANTY_CLAIMS_0117.sashdat' incaslib='samples'
 		 casout='warranty_claims' outcaslib='casuser' 
@@ -54,34 +69,31 @@ quit;
  METHOD 1 - Create a macro program to save the CAS table as a variety of file types 
 ****************************************************************************/
 
-/* View what the macro program is doing */
 options mprint;
 
 /* Using the SAS macro language */
-%macro create_cas_files();
+%macro create_cas_files(createFileTypes);
 
-	/* Specify the file types */
-	%let fileTypes = %nrstr(csv,parquet,sas7bdat,sashdat);
-	
 	/* Count the total number of items in the list and store in a macro variable */
 	data _null_;
-		total_n=countw("&fileTypes",',');
+		total_n=countw(&createFileTypes,',');
 		call symputx('total_n',total_n);
 	run;
-	
-	/* Save the CAS tables as each file type by looping over fileTypes */
+	%put &=total_n;
+
+	/* Loop over the file types */
 	%do i=1 %to &total_n;
-
-		/* Obtain each element */
-        %let type = %scan(&fileTypes,&i,',');
-
-		/* View value in log for validation */
-		%put &type; 
+	
+		data _null_;
+			fileType = scan(&createFileTypes,&i,',');
+			call symputx('fileType',fileType);
+		run;
+		%put &=fileType;
 
 		/* Save each file type to casuser */
 		proc casutil;
 			save casdata='warranty_claims' incaslib='casuser' 
-		 		 casout="warranty_claims.&type" outcaslib='casuser'
+		 		 casout="warranty_claims.&fileType" outcaslib='casuser'
 		 		 replace;
 		quit;
    	%end;
@@ -92,7 +104,7 @@ options mprint;
 	quit;
 %mend;
 
-%create_cas_files()
+%create_cas_files(createFileTypes="csv,parquet,sas7bdat,sashdat")
 
 options nomprint;
 
