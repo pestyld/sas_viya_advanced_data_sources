@@ -30,6 +30,8 @@
  2. LOAD A SAMPLE FILE INTO MEMORY (REVIEW)      
 ******************************************/
 /* (Review) Load a sample file into memory in CAS */
+caslib _all_ list;
+
 proc casutil;
 	load casdata='WARRANTY_CLAIMS_0117.sashdat' incaslib='samples'
 		 casout='warranty_claims' outcaslib='casuser' 
@@ -108,6 +110,7 @@ proc cas;
 	end;
 quit;
 
+
 /* b. Create a string variable that holds the file name */
 proc cas;
 	fileTypes = {'csv','parquet','sas7bdat','sashdat'};
@@ -116,6 +119,7 @@ proc cas;
 		print saveFileAs;
 	end;
 quit;
+
 
 /* c. Save the CAS table as each file type */
 proc cas;

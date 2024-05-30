@@ -1,6 +1,9 @@
 /****************************************************
  ACCESS BASIC DATA SOURCES USING SAS9                                           
 *****************************************************  
+ REQUIREMENTS: 
+	- Must run the workshop/utility/utility_macros.sas program prior
+*****************************************************************************
 > 1. Base SAS Engine  
 > 2. CSV File                         
 > 3. XLSX Engine                              
