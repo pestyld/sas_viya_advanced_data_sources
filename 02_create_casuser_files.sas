@@ -1,5 +1,5 @@
 /****************************************************************************
-  CREATE FILES IN THE CASUSER CASLIB FOR DEMONSTRATION                        
+  DYNAMICALLY CREATE FILES IN THE CASUSER CASLIB FOR DEMONSTRATION                        
 *****************************************************************************
  REQUIREMENTS: 
 	- Must run the workshop/utility/utility_macros.sas program prior
@@ -46,33 +46,47 @@
 /* View all available caslibs */
 caslib _all_ list;
 
+/* View files in the samples caslib */
+proc casutil;
+	list files incaslib='samples';
+quit;
+
+
 /* (Review) Load a sample file into memory in CAS */
 proc casutil;
-	load casdata='WARRANTY_CLAIMS_0117.sashdat' incaslib='samples'
-		 casout='warranty_claims' outcaslib='casuser' 
+	load casdata='WARRANTY_CLAIMS_0117.sashdat' incaslib='samples' /* File to load */
+		 casout='warranty_claims' outcaslib='casuser'              /* Output in-memory table information */
 		 replace;
+
+	/* List available in-memory tables */
+	list tables incaslib='casuser';
 quit;
 
 
 /* (Review) Save the CAS table as a csv file */
 proc casutil;
-	save casdata='warranty_claims' incaslib='casuser' 
-		 casout="warranty_claims.csv" outcaslib='casuser'
+	save casdata='warranty_claims' incaslib='casuser'         /* In-memory CAS table to save */
+		 casout="warranty_claims.csv" outcaslib='casuser'     /* Output file on disk */
 		 replace;
 
+	/* List available files on disk in the Casuser caslib */
 	list files incaslib='casuser';
 quit;
 
 
 
 /****************************************************************************
- METHOD 1 - Create a macro program to save the CAS table as a variety of file types 
+ METHOD 1 - Create a macro program to save the CAS table as a variety of file types
+		  - csv, parquet, sashdat, sas7bdat
 ****************************************************************************/
 
 options mprint;
 
 /* Using the SAS macro language */
 %macro create_cas_files(createFileTypes);
+/*
+	Example argument: createFileTypes="csv,parquet,sas7bdat,sashdat"
+*/
 
 	/* Count the total number of items in the list and store in a macro variable */
 	data _null_;
@@ -112,11 +126,13 @@ options nomprint;
 
 /****************************************************************************
  METHOD 2 - Use the CASL language 
+		  - Contains data types likes lists, dictionaries, strings, numerics, result tables
 ****************************************************************************/
 
 /* a. Loop over a list in CASL */
 proc cas;
-	fileTypes = {'csv','parquet','sas7bdat','sashdat'};
+	/* Create a list */
+	fileTypes = {'csv','parquet','sas7bdat','sashdat'}; 
 	do type over fileTypes;
 		print type;
 	end;
@@ -125,9 +141,12 @@ quit;
 
 /* b. Create a string variable that holds the file name */
 proc cas;
+	/* Create a list */
 	fileTypes = {'csv','parquet','sas7bdat','sashdat'};
+
+	/* Loop over list */
 	do type over fileTypes;
-		saveFileAs = cats('warranty_claims.',type);
+		saveFileAs = cats('casl_warranty_claims.',type);
 		print saveFileAs;
 	end;
 quit;
@@ -135,10 +154,13 @@ quit;
 
 /* c. Save the CAS table as each file type */
 proc cas;
+	/* Create a list */
 	fileTypes = {'csv','parquet','sas7bdat','sashdat'};
+
+	/* Create a dictionary to reference the CAS table */
 	castbl = {name='warranty_claims', caslib = 'casuser'};
 
-	/* Save the CAS table as each file type */
+	/* Save the CAS table as each file type with a loop */
 	do type over fileTypes;
 		/* Create the file name with extension */
 		saveFileAs = cats('casl_warranty_claims.',type);
@@ -154,7 +176,7 @@ quit;
 
 
 /* 
-  d. Create a function for resuse. 
+  d. Create a function for resuse and sharing. 
      Functions is in workshop/utility/casl_func.sas
 */
 proc cas;

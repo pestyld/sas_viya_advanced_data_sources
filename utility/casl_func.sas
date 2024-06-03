@@ -47,4 +47,6 @@ returns:
 			replace=TRUE;
 end;
 
+
+/* Make sure to use RUN instead of QUIT */
 run;

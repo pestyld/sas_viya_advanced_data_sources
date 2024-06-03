@@ -1,5 +1,5 @@
-/*************************************************************************************************
- LOADING DIFFERENT FILE TYPES TO CAS
+/****************************************************************************
+ DYNAMICALLY LOADING DIFFERENT FILE TYPES TO CAS
 *****************************************************************************
  REQUIREMENTS: 
 	- Must run the workshop/utility/utility_macros.sas program prior

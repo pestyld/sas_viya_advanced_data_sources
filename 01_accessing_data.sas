@@ -1,6 +1,6 @@
-/****************************************************
- ACCESS BASIC DATA SOURCES USING SAS9                                           
-*****************************************************  
+/****************************************************************************
+ ACCESS BASIC DATA SOURCES USING SAS9 ON SAS VIYA                                           
+*****************************************************************************  
  REQUIREMENTS: 
 	- Must run the workshop/utility/utility_macros.sas program prior
 *****************************************************************************
@@ -9,7 +9,7 @@
 > 3. XLSX Engine                              
 > 4. JSON Engine                              
 > 5. Database                                                         
-*****************************************************/
+****************************************************************************/
 
 
 /**********************************************
@@ -27,7 +27,7 @@
  - The SAS LIBNAME engine is a common interface into accessing different data sources 
  - Example: libname <library reference name> <engine to use> <connection information>; 
 ********************************************************************************************/
-%showImage("&path./images/02_compute_libraries.png")
+%showImage("&path./images/01_compute_libraries.png")
 
 
 
@@ -87,8 +87,9 @@ run;
 
 
 /* 2. Connect directly to the XLSX file using the LIBNAME engine */
-/* This method accesses every worksheet in the workbook if it contains multiple worksheets */
-/* Enables you to read from and write to the same workbook */
+/* - Treats the Excel workbook as a SAS library */
+/* - This method accesses every worksheet in the workbook if it contains multiple worksheets */
+/* - Enables you to read from and write to the same workbook */
 
 /* Connect to the Excel workbook directly and treat it as a SAS library */
 libname myxl xlsx "&path./data/home_equity.xlsx";
@@ -107,7 +108,7 @@ run;
 
 
 /* Create a new XLSX file name home_equity_final.xlsx */
-libname outxl xlsx "&path./data/home_equity_final.xlsx";
+libname outxl xlsx "&path./data/home_equity_good_loans.xlsx";
 
 data outxl.bad_0;         /* Create new worksheet in a new Excel workbook */
 	set myxl.home_equity; /* read from Excel */
@@ -130,11 +131,6 @@ libname myxl clear;
 **************************/
 /* Reference the JSON file */
 filename jsonfile "&path./data/home_equity.json";
-
-/* View the JSON file */
-data _null_;
-	viewJSON = jsonpp('jsonfile','log');
-run;
 
 /* Use the JSON engine */
 libname myjson JSON fileref=jsonfile noalldata;
