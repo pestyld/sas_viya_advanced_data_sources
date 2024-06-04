@@ -1,9 +1,16 @@
 /*************************************************************************************************
  CREATE A SERIES OF CSV FILES IN A SUBDIRECTORY IN THE CASUSER CASLIB
- - Creates a subdirectory named 
+ - Creates a subdirectory named multiple_files in the Casuser caslib
+ - Creates multiple CSV files
+ - Creates multiple parquet files
 **************************************************************************************************
- XXX
-**************************************************************************************************/
+ REQUIREMENTS: 
+	- Must run the workshop/utility/utility_macros.sas program prior
+*****************************************************************************
+ Copyright © 2024, SAS Institute Inc., Cary, NC, USA.  All Rights Reserved.
+ SPDX-License-Identifier: Apache-2.0                                       
+*****************************************************************************/
+
 
 /******************************************
  a. Load the sample file into memory in CAS 
@@ -16,9 +23,9 @@ quit;
 
 
 
-/******************************************
+/*********************************************************
  b. Rename and drop columns for a smaller, cleaner table
-******************************************/
+*********************************************************/
 proc cas;
 	/* Specify the CAS table */
 	castbl = {name='warranty_claims', caslib='casuser'};
@@ -73,6 +80,9 @@ quit;
 
 /* Create files in subdirectory */
 proc cas;
+	/* Load function to save CAS table as flat files */
+ 	%include "&path/utility/casl_func.sas";
+
 	castbl = {name='warranty_claims', caslib='casuser'};
 
 /* Create a CSV file for each year */
@@ -82,19 +92,21 @@ proc cas;
 
 /* Create each parquet/csv file in the subdirectory */
 
-	/* Load function to save CAS table as flat files */
- 	myFunctions = readpath("&path/utility_macros_func/utility_casl_func.sas");
-	execute(myFunctions);
-
 	do year over unique_years;
 		year = strip(year);
 		filter= {where=cats("Model_Year='",year,"'")};
 		print filter;
+
 		/* Create parquet/csv files */
 		create_files(castbl || filter, 'parquet');
 		create_files(castbl || filter, 'csv');
 	end;
+quit;
 
+
+
+/* View files in the subdirectory */
+proc cas;
 /* View the sub directory in the Casuser caslib */
 	table.fileInfo / allFiles = TRUE, caslib = 'casuser';
 
@@ -102,39 +114,3 @@ proc cas;
     table.fileInfo / path='multiple_files', caslib='casuser';
 quit;
 
-
-proc cas;
-	table.fileInfo / path='multiple_files', caslib='casuser';
-quit;
-
-
-
-
-proc cas;
-	castbl = {name='warranty_claims', caslib='casuser'};
-	year = '2019';
-	
-	
-	print castbl || filter;
-quit;
-
-
-quit;
-
-
-
-    for year in list(castbl.Model_Year.unique()):      
-        (cas_table_reference
-         .query(f"Model_Year ='{year}'")
-         .save(name = f'csv_file_blogs/warranty_claims_{year}.csv', 
-               caslib = 'casuser',
-               replace = True)
-        )
- 
-    ## Drop the CAS Table
-    cas_table_reference.dropTable()
- 
-    ## View files in the csv_file_blogs subdirectory
-    fi = conn.fileInfo(allFiles = True, caslib = 'casuser')
-    fi_subdir = conn.fileInfo(path = 'csv_file_blogs', caslib = 'casuser')
-    display(fi, fi_subdir)

@@ -42,7 +42,7 @@ returns:
 */
 		table.save / 
 			table=castbl,
-			name='csv_file_blogs/warranty_claims_'||year||'.'||fileType, 
+			name='multiple_files/warranty_claims_'||year||'.'||fileType, 
 			caslib='casuser', 
 			replace=TRUE;
 end;
