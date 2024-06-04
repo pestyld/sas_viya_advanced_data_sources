@@ -19,15 +19,6 @@
 /******************************************
  2. Store the name of the files      
 ******************************************/
-libname casuser cas caslib='casuser';
-
-/* View the name of the output table*/
-ods trace on;
-proc casutil;
-	list files incaslib='casuser';
-quit;
-ods trace off;
-
 /* Create a SAS table with the files */
 ods output FileInfo=CasuserFiles;  
 proc casutil;
@@ -70,14 +61,18 @@ options mprint;
 		from work.casuserFiles
 		where Name like 'casl_warranty_claims%';
 	quit;
-	%put &=filesToDelete;
+	%put NOTE:**********************************************;
+	%put NOTE: LIST OF FILES TO DELETE: &=filesToDelete;
+	%put NOTE:**********************************************;
 	
 	/* Count total number of files to delete */
 	data _null_;
-		total_files = countw("&files",',');
+		total_files = countw("&filesToDelete",',');
 		call symputx('total_files', total_files);
 	run;
-	%put &=total_files;
+	%put NOTE:**********************************************;
+	%put NOTE: Total files to delete: &=total_files;
+	%put NOTE:**********************************************;
 
 	/* Loop over the list of files to delete */
 	%do file=1 %to &total_files;
@@ -87,7 +82,9 @@ options mprint;
 			delFile = scan("&filesToDelete",&file,',');
 			call symputx('delFile',delFile);
 		run;
-		%put &=delFile;
+		%put NOTE:**********************************************;
+		%put NOTE: File to delete: &=delFile;
+		%put NOTE:**********************************************;
 	%end;
 
 %mend;
@@ -137,11 +134,13 @@ options mprint;
 
 		/* Count total number of files to delete */
 		data _null_;
-			total_files = countw("&files",',');
+			total_files = countw("&filesToDelete",',');
 			call symputx('total_files', total_files);
 		run;
+		%put NOTE:**********************************************;
 		%put NOTE: Total files to delete: &=total_files;
-	
+		%put NOTE:**********************************************;
+
 		/* Loop over the list of files to delete */
 		%do file=1 %to &total_files;
 			
@@ -150,8 +149,10 @@ options mprint;
 				delFile = scan("&filesToDelete",&file,',');
 				call symputx('delFile',delFile);
 			run;
+			%put NOTE:**********************************************;
 			%put NOTE: File to delete: &=delFile;
-	
+			%put NOTE:**********************************************;
+
 			/* Delete file */
 			proc casutil;
 				deletesource casdata="&delFile" incaslib=&caslib quiet;
@@ -172,6 +173,7 @@ options mprint;
 
 
 %deleteFiles(caslib="casuser")
+
 
 
 
@@ -196,7 +198,7 @@ proc cas;
 	table.fileInfo result=files / caslib=searchCaslib;
 
 	/* Obtain file nams from the dictionary table */
-	fileNames = files['FileInfo'][,'Name'];
+	fileNames = files['FileInfo'].where(Name like 'warranty_claims%')[,'Name'];
 	print fileNames;
 quit;
 
@@ -207,7 +209,7 @@ proc cas;
 	table.fileInfo result=files / caslib=searchCaslib;
 
 	/* Obtain file nams from the dictionary table */
-	fileNames = files['FileInfo'][,'Name'];
+	fileNames = files['FileInfo'].where(Name like 'warranty_claims%')[,'Name'];
 	
 	/* Loop over each file */
 	do file over fileNames;
@@ -222,10 +224,10 @@ proc cas;
 	table.fileInfo result=files / caslib=searchCaslib;
 
 	/* Obtain file nams from the dictionary table */
-	fileNames = files['FileInfo'][,'Name'];
+	fileNames = files['FileInfo'].where(Name like 'warranty_claims%')[,'Name'];
 	
 	/* Delete each file */
-	if exists(fileNames) = 1 then do;
+	if dim(fileNames) > 0 then do;
 		do file over fileNames;
 			print (NOTE) 'DELETING FILE: ' || file;     /* (NOTE) is not valid in Viya 3.5 */
 			table.deleteSource / source=file, caslib='casuser';
@@ -234,4 +236,7 @@ proc cas;
 	else;
 		print (NOTE) "No files exist";
 	end;
+
+	/* List all files in Casuser */
+	table.fileInfo / caslib='casuser';
 quit;
