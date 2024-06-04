@@ -1,5 +1,5 @@
 /****************************************************************************
- ACCESS BASIC DATA SOURCES USING SAS9 ON SAS VIYA                                           
+ ACCESS BASIC DATA SOURCES USING SAS9 ON SAS VIYA (REVIEW)                                          
 *****************************************************************************  
  REQUIREMENTS: 
 	- Must run the workshop/utility/utility_macros.sas program prior
@@ -72,7 +72,7 @@ run;
  3. READ EXCEL FILES  
  - 2 methods       
 **************************/
-/* 1 .Import a worksheet from the workbook as a SAS table */
+/* 3a .Import a single worksheet from the workbook as a SAS table */
 proc import datafile="&path./data/home_equity.xlsx"
             dbms=xlsx
             out=work.import_xlsx;
@@ -86,10 +86,10 @@ run;
 
 
 
-/* 2. Connect directly to the XLSX file using the LIBNAME engine */
+/* 3b. Connect directly to the XLSX file using the LIBNAME engine */
 /* - Treats the Excel workbook as a SAS library */
-/* - This method accesses every worksheet in the workbook if it contains multiple worksheets */
-/* - Enables you to read from and write to the same workbook */
+/* - This method accesses every worksheet in the workbook, even if it contains multiple worksheets */
+/* - Enables you to read from and write to the same (or different) workbook */
 
 /* Connect to the Excel workbook directly and treat it as a SAS library */
 libname myxl xlsx "&path./data/home_equity.xlsx";
@@ -107,7 +107,7 @@ data myxl.bad_1;          /* Create new worksheet in Excel */
 run;
 
 
-/* Create a new XLSX file name home_equity_final.xlsx */
+/* Create a new Excel file name home_equity_good_loans.xlsx */
 libname outxl xlsx "&path./data/home_equity_good_loans.xlsx";
 
 data outxl.bad_0;         /* Create new worksheet in a new Excel workbook */

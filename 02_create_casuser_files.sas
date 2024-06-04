@@ -167,7 +167,7 @@ proc cas;
 
 		table.save / 
 			table=castbl,                                    /* Input cas table  */
-			name=saveFileAs, caslib='casuser' replace=TRUE;  /* Output cas table */
+			name=saveFileAs, caslib='casuser' replace=TRUE;  /* Output file */
 	end;
 
 	/* View files in the Casuser caslib */
@@ -177,7 +177,7 @@ quit;
 
 /* 
   d. Create a function for resuse and sharing. 
-     Functions is in workshop/utility/casl_func.sas
+     Function is in workshop/utility/casl_func.sas
 */
 proc cas;
 	/* Create the CASL functions */
