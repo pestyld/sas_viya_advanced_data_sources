@@ -11,6 +11,8 @@
  SPDX-License-Identifier: Apache-2.0                                       
 *****************************************************************************/
 
+%getcwd(path)
+%put &=path;
 
 /******************************************
  a. Load the sample file into memory in CAS 
@@ -90,15 +92,14 @@ proc cas;
 	unique_years =  freq['Frequency'][,'CharVar'];	
 	print unique_years;         
 
-/* Create each parquet/csv file in the subdirectory */
+/* Create each csv file in the subdirectory */
 
 	do year over unique_years;
 		year = strip(year);
 		filter= {where=cats("Model_Year='",year,"'")};
 		print filter;
 
-		/* Create parquet/csv files */
-		create_files(castbl || filter, 'parquet');
+		/* Create csv files */
 		create_files(castbl || filter, 'csv');
 	end;
 quit;
@@ -113,4 +114,3 @@ proc cas;
 /* View all files in the csv_file_blogs subdirectory */
     table.fileInfo / path='multiple_files', caslib='casuser';
 quit;
-

@@ -6,75 +6,73 @@
 **************************************************************************************************/
 
 /****************************************************
- Folder structure of files                          
+ Folder structure of PDF files                          
 *****************************************************
- > workshop folder
-	 > PDF_files (3 sample PDF files)                 
+ > Casuser caslib
+	> PDF_files (3 sample PDF files)                 
 	   -- PDF_Form_1.pdf                              
 	   -- PDF_Form_2.pdf                              
-	   -- PDF_Form_3.pdf                              
-	 > 02_extract_text_from_pdfs.sas                  
+	   -- PDF_Form_3.pdf  
+	> Other files                                            
 ****************************************************/
 
 
 /******************************************
  1. PATH FOR THE WORKSHOP FOLDER      
 ******************************************/
-/* Dynamically finds the current directory path based on where the program is saved and stores it in 
-   the path macro variable. Valid in SAS Studio.  */
-%let fileName =  /%scan(&_sasprogramfile,-1,'/');  
-%let path = %sysfunc(tranwrd(&_sasprogramfile, &fileName,));
-
-/* Confirm the path is as expected */
+%getcwd(path)
 %put &=path;
 
 
 
 /**********************************************************
  2. CONNECT TO CAS AND LOAD PDF FILES INTO A CAS TABLE     
+	- I have the PDF files located in a subdirectory in the Casuser caslib.
+	- You can place the folder anywhere CAS can access. If you place
+	  the folder in another location, make a caslib to that folder.
 ***********************************************************/
-/* loadTable action (has the import option info - https://go.documentation.sas.com/doc/en/pgmsascdc/default/caspg/cas-table-loadtable.htm */
-/* PROC CASUTIL - https://go.documentation.sas.com/doc/en/pgmsascdc/default/casref/n03spmi9ixzq5pn11lneipfwyu8b.htm#n1nj5zckmttquen1siwyi8gfsf0q */
 
-/* Create a caslib to the folder with the PDFs in the PDF_files folder. Folder must be accessible to the CAS server  */
-caslib my_pdfs path="&path./PDF_files" subdirs;
-
+/* Modify the path here to the location of your PDF files */
+*caslib my_pdfs path="path-to-folder/PDF_files" subdirs;
 
 /* View all files in the my_pdfs caslib. 3 PDF files should exist. */
 proc casutil;
-	list files incaslib='my_pdfs'; 
+	list files incaslib='casuser' subdir='PDF_files'; 
 quit;
 
 
 /* Read in all of the PDF files in the caslib as a single CAS table */
 /* Each PDF will be one row of data in the CAS table                */
 proc casutil;
-    load casdata=''                              /* To read in all files use an empty string. For a single PDF file specify the name and extension */
-         incaslib='my_pdfs'                      /* The location of the PDF files to load */
+    load casdata='PDF_files'                              /* To read in all files use an empty string. For a single PDF file specify the name and extension */
+         incaslib='casuser'                      /* The location of the PDF files to load */
          importoptions=(fileType="document"      /* Specify document import options   */
                         fileExtList = 'PDF' 
                         tikaConv=True)   
 		 casout='pdf_data' outcaslib='casuser' replace;  /* Specify the output cas table info */
 quit;
 
+libname casuser cas caslib='casuser';
+
 /* Preview the new CAS table */
 proc print data=casuser.pdf_data(obs=10);
 run;
 
 
-/****************************************************/
-/* Using native CAS Language (CASL) - OPTIONAL      */
-/****************************************************/
-/* The CASUTIL procedure uses the loadTable         */
-/* action through the CAS engine behind the scenes. */
-/* Instead of using CASUTIL you can call the action */
-/* directly. See below.                            */
-/****************************************************/
+
+/**************************************************
+Using native CAS Language (CASL) - OPTIONAL     
+**************************************************
+The CASUTIL procedure uses the loadTable        
+action through the CAS engine behind the scenes.
+Instead of using CASUTIL you can call the action
+directly. See below.                           
+**************************************************/
 
 /* proc cas; */
 /* 	table.loadTable / */
-/* 		path = "",                                */
-/*         caslib = 'my_pdfs',            */
+/* 		path = "PDF_files",                                */
+/*         caslib = 'casuser',            */
 /*         importOptions = {               */
 /*               fileType = 'DOCUMENT', */
 /*               fileExtList = 'PDF', */
@@ -93,7 +91,8 @@ run;
 
 /*****************************************************************************
  3. CLEAN THE UNSTRUCTURED DATA                                             
- The data is small so all processing will be done using the SAS9 Compute server.
+ The data is small, so all processing will be done using the SAS9 Compute server.
+ No CAS required. For larger files or advanced analytics you might want to use the CAS server
 ******************************************************************************
  Step 1 - Build some logic to figure out how to clean the unstructured data 
  Step 2 - Finalize the ETL pipeline                                        
@@ -102,14 +101,18 @@ run;
 /* Step 1 - DEVELOPMENT - figure out the general programming logic to clean the unstructured text */
 data work.final_pdf_data;
 	set casuser.pdf_data;
-	length FormFieldsData $10000; 
+
+	/* Create a large column to hold all text */
+	length FormFieldsData $10000;  
+
+	/* Drop unnecessary columns */
 	drop path fileType fileDate;
 
 	/* Create a column with just the form entries. They start after the Company Name text */
 	firstFormField = 'Company Name:';
 	formStartPosition = find(content, firstFormField);
 
-	/* Get form field input only */
+	/* Get form field input only and remove leading/trailing blanks */
 	FormFieldsData = strip(substr(content,formStartPosition));
 
 	/* Remove random special characters and whitespace from form entries*/
@@ -150,9 +153,9 @@ proc fcmp outlib=work.funcs.trial;
 /*
 This function will obtain the text input field between two input objects and return the value as a character
 
-- formFieldsData - The string that contains the text from the PDF
-- field_to_find - The name of the first input field object (includes the :)
-- next_field - The field to parse the input field to (includes the :)
+- formFieldsData (char) - The string that contains the text from the PDF
+- field_to_find (char) - The name of the first input field object (includes the :)
+- next_field (char) - The field to parse the input field to (includes the :)
 */
 
 		/* Find position of the text to obtain */
@@ -199,7 +202,6 @@ data final_pdf_data;
 	FormFieldsData = tranwrd(FormFieldsData,'0A'x,''); /* Remove carriage return line feed */
 
 	/* Extract values */
-
 	Date = input(find_pdf_value(FormFieldsData, 'Date:','Group2:'), mmddyy10.); 
 	Company_Name = find_pdf_value(FormFieldsData, 'Company Name:', 'First Name:');
 	Membership = find_pdf_value(FormFieldsData,'Group2:','Member ID:'); /* Group2: */
@@ -222,8 +224,49 @@ data final_pdf_data;
 
 	/* Format */
 	format Date mmddyy10.;
+
+	/* Add clean labels for Visual Analytics dashboard */
+	label
+		Company_Name = 'Company Name'
+		Member_ID = 'Member ID'
+		First_Name = 'First Name'
+		Last_Name = 'Last Name'
+		Membership_Status = 'Membership Status'
+		Service_Consulting = 'Service Consulting'
+		Service_Mentoring = 'Service Mentoring'
+		Service_Live_Training = 'Service Live Training'
+		Comments = 'Customer Comments'
+	;
 run;
 
 /* Preview the final data */
-proc print data=work.final_pdf_data;
+proc print data=work.final_pdf_data label;
 run;
+
+
+/************************************************************
+ Load the file to another location to create a dashboard 
+*************************************************************
+ Multiple ways to do this:
+	- 1. Create the final table in a library accessible to the CAS server already, not WORK.
+	  This technique is better for larger data.
+	- 2. Simply load the SAS7BDAT file to CAS and save it back to disk in any file format you wish.
+************************************************************/
+
+/* METHOD 2 - Load to CAS from Compute and save to disk */
+proc casutil;
+	/* Load file into memory */
+	load data=work.final_pdf_data
+		 casout='final_pdf_data' outcaslib='casuser' replace;
+
+	/* Save the CAS table as a sashdat (or whatever file you want) in a location CAS can access */
+	save casdata='final_pdf_data' incaslib='casuser'
+		 casout='final_pdf_data.sashdat' outcaslib='casuser'
+		 replace;
+quit;
+	
+
+/************************************************************
+ FIND THE FILE USING SAS VISUAL ANALYTICS AND CREATE A DASHBOARD
+ - NOTE: The UI in SAS Viya 3.5 is slightly different then here in Viya 4
+*************************************************************
