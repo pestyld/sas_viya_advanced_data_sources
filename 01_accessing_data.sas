@@ -148,10 +148,30 @@ libname myjson clear;
 
 
 /********************************
- 5. READ DATABASE DATA
+ 5. READ DATABASE DATA (SNOWFLAKE)
 *********************************/
-/* add code */
+options nonotes;
+libname snowssd snow server="&account_url"
+                     user="&user_name"
+                     password="&password"
+                     warehouse=users_wh
+                     database=SNOWFLAKE_SAMPLE_DATA
+                     schema=TPCH_SF10;
+option notes;
 
+
+/* View extra information in the log */
+options sastrace=',,,d' sastraceloc=saslog nostsuffix sql_ip_trace=note;
+
+/* Simple SQL query and log exploration */
+proc sql;
+SELECT count(*) format=comma16. AS TOTAL_ROWS
+FROM snowssd.PART;
+quit;
+
+
+/* Disconnect from Snowflake */
+libname snowssd clear;
 
 
 /* CLASSES */
