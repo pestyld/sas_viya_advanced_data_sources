@@ -21,6 +21,8 @@ proc casutil;
 	load casdata='WARRANTY_CLAIMS_0117.sashdat' incaslib='samples'
 		 casout='warranty_claims' outcaslib='casuser' 
 		 replace;
+
+	list tables incaslib='casuser';
 quit;
 
 
@@ -60,6 +62,8 @@ proc cas;
 
 	/* Confirm column names */
 	table.columnInfo / table=castbl;
+
+	table.fetch / table=castbl;
 quit;
 
 
@@ -109,8 +113,8 @@ quit;
 /* View files in the subdirectory */
 proc cas;
 /* View the sub directory in the Casuser caslib */
-	table.fileInfo / allFiles = TRUE, caslib = 'casuser';
+	table.fileInfo / caslib = 'casuser';
 
-/* View all files in the csv_file_blogs subdirectory */
+/* View all files in the multiple_files subdirectory */
     table.fileInfo / path='multiple_files', caslib='casuser';
 quit;

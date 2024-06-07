@@ -27,12 +27,16 @@
  - The SAS LIBNAME engine is a common interface into accessing different data sources 
  - Example: libname <library reference name> <engine to use> <connection information>; 
 ********************************************************************************************/
+/* SAS Viya Overview */
+%showImage("&path/images/02_SAS_Viya_Overview.png")
+
+/* SAS Compute Libraries (SAS9) */
 %showImage("&path./images/01_compute_libraries.png")
 
 
 
 /**************************
- 1. READ SAS TABLES 
+ 1. READ SAS TABLES (review)
 **************************/
 libname mydata "&path./data";
 
@@ -72,7 +76,7 @@ run;
  3. READ EXCEL FILES  
  - 2 methods       
 **************************/
-/* 3a .Import a single worksheet from the workbook as a SAS table */
+/* 3a. Imports a single worksheet at a time from the workbook and creates SAS table */
 proc import datafile="&path./data/home_equity.xlsx"
             dbms=xlsx
             out=work.import_xlsx;
@@ -86,7 +90,7 @@ run;
 
 
 
-/* 3b. Connect directly to the XLSX file using the LIBNAME engine */
+/* 3b. XLSX Engine: Connect directly to the XLSX file using the LIBNAME engine */
 /* - Treats the Excel workbook as a SAS library */
 /* - This method accesses every worksheet in the workbook, even if it contains multiple worksheets */
 /* - Enables you to read from and write to the same (or different) workbook */
@@ -94,6 +98,7 @@ run;
 /* Connect to the Excel workbook directly and treat it as a SAS library */
 libname myxl xlsx "&path./data/home_equity.xlsx";
 
+/* View the Excel worksheet(s) through the library without creating a SAS table */
 proc print data=myxl.home_equity(obs=10);
 run;
 
@@ -107,7 +112,7 @@ data myxl.bad_1;          /* Create new worksheet in Excel */
 run;
 
 
-/* Create a new Excel file name home_equity_good_loans.xlsx */
+/* Create a new Excel file named home_equity_good_loans.xlsx using engine */
 libname outxl xlsx "&path./data/home_equity_good_loans.xlsx";
 
 data outxl.bad_0;         /* Create new worksheet in a new Excel workbook */
@@ -136,9 +141,6 @@ filename jsonfile "&path./data/home_equity.json";
 libname myjson JSON fileref=jsonfile noalldata;
 
 /* Many JSON files can include a lot of information. This is a simple flat table */                  
-proc contents data=myjson._all_;
-run;
-
 proc print data=myjson.sastabledata_home_equity(obs=10);
 run;
 
@@ -151,7 +153,7 @@ libname myjson clear;
  5. READ DATABASE DATA (SNOWFLAKE)
 *********************************/
 options nonotes;
-libname snowssd snow server="&account_url"
+libname snowssd SNOW server="&account_url"
                      user="&user_name"
                      password="&password"
                      warehouse=users_wh
@@ -160,15 +162,25 @@ libname snowssd snow server="&account_url"
 option notes;
 
 
-/* View extra information in the log */
+/* View extra information in the log when working with an external database */
 options sastrace=',,,d' sastraceloc=saslog nostsuffix sql_ip_trace=note;
 
 /* Simple SQL query and log exploration */
+proc sql;
+SELECT *
+FROM snowssd.PART(obs=10);
+quit;
+
 proc sql;
 SELECT count(*) format=comma16. AS TOTAL_ROWS
 FROM snowssd.PART;
 quit;
 
+
+/* Run in-database procedure to streamline your code and limit data movement */
+proc freq data=snowSSD.PART order=freq;
+	tables P_MFGR P_BRAND / plots=freqplot;
+run;
 
 /* Disconnect from Snowflake */
 libname snowssd clear;

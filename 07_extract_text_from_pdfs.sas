@@ -25,14 +25,14 @@
 
 
 
-/**********************************************************
+/********************************************************************
  2. CONNECT TO CAS AND LOAD PDF FILES INTO A CAS TABLE     
 	- I have the PDF files located in a subdirectory in the Casuser caslib.
 	- You can place the folder anywhere CAS can access. If you place
 	  the folder in another location, make a caslib to that folder.
-***********************************************************/
+*********************************************************************/
 
-/* Modify the path here to the location of your PDF files */
+/* Modify the path here to the location of your PDF files if you have them in a different location */
 *caslib my_pdfs path="path-to-folder/PDF_files" subdirs;
 
 /* View all files in the my_pdfs caslib. 3 PDF files should exist. */
@@ -44,7 +44,7 @@ quit;
 /* Read in all of the PDF files in the caslib as a single CAS table */
 /* Each PDF will be one row of data in the CAS table                */
 proc casutil;
-    load casdata='PDF_files'                              /* To read in all files use an empty string. For a single PDF file specify the name and extension */
+    load casdata='PDF_files'                     /* To read in all files use an empty string. For a single PDF file specify the name and extension */
          incaslib='casuser'                      /* The location of the PDF files to load */
          importoptions=(fileType="document"      /* Specify document import options   */
                         fileExtList = 'PDF' 

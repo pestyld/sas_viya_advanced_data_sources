@@ -21,8 +21,8 @@ returns:
 			saveFileAs = cats('casl_warranty_claims.',type);
 	
 			table.save / 
-				table=castbl,                       /* Input cas table  */
-				name=saveFileAs, caslib='casuser' replace=TRUE;  /* Output cas table */
+				table=castbl,                                     /* Input cas table  */
+				name=saveFileAs, caslib='casuser', replace=TRUE;  /* Output cas table */
 		end;
 	end;
 

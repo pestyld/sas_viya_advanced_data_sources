@@ -46,7 +46,7 @@ quit;
 ******************/
 
 options mprint;
-%macro deleteFiles(caslib);
+%macro deleteFiles(caslib, fileNameLike);
 
 	/* Create a SAS table with the files */
 	ods output FileInfo=CasuserFiles;  
@@ -59,7 +59,7 @@ options mprint;
 		select Name
 		into :filesToDelete separated by ','
 		from work.casuserFiles
-		where Name like 'casl_warranty_claims%';
+		where Name like &fileNamelike;
 	quit;
 	%put NOTE:**********************************************;
 	%put NOTE: LIST OF FILES TO DELETE: &=filesToDelete;
@@ -90,7 +90,7 @@ options mprint;
 %mend;
 
 
-%deleteFiles(caslib="casuser")
+%deleteFiles(caslib='casuser', fileNameLike='casl_warranty_claims%')
 
 
 
@@ -101,7 +101,7 @@ options mprint;
  Final macro
 ******************/
 
-/* Delete a file */
+/* Delete a file in a caslib */
 proc casutil;
 	deletesource casdata="warranty_claims.parquet" incaslib="casuser" quiet;
 	list files incaslib="casuser";
@@ -110,7 +110,7 @@ quit;
 
 
 options mprint;
-%macro deleteFiles(caslib);
+%macro deleteFiles(caslib, fileNameLike);
 
 	/* Create a SAS table with the files */
 	ods output FileInfo=CasuserFiles;  
@@ -123,7 +123,7 @@ options mprint;
 		select Name
 		into :filesToDelete separated by ','
 		from work.casuserFiles
-		where Name like 'casl_warranty_claims%';
+		where Name like &fileNameLike;
 	quit;
 
 	/* If files found to delete, delete the files */
@@ -172,7 +172,7 @@ options mprint;
 %mend;
 
 
-%deleteFiles(caslib="casuser")
+%deleteFiles(caslib='casuser', fileNameLike='casl_warranty_claims%')
 
 
 
@@ -198,7 +198,9 @@ proc cas;
 	table.fileInfo result=files / caslib=searchCaslib;
 
 	/* Obtain file nams from the dictionary table */
-	fileNames = files['FileInfo'].where(Name like 'warranty_claims%')[,'Name'];
+	fileNames = files['FileInfo']                      /* Access the  table */
+				.where(Name like 'warranty_claims%')   /* Filter for files to delete */
+				[,'Name'];                             /* Create a list of file names */
 	print fileNames;
 quit;
 
@@ -209,7 +211,9 @@ proc cas;
 	table.fileInfo result=files / caslib=searchCaslib;
 
 	/* Obtain file nams from the dictionary table */
-	fileNames = files['FileInfo'].where(Name like 'warranty_claims%')[,'Name'];
+	fileNames = files['FileInfo']                      /* Access the  table */
+				.where(Name like 'warranty_claims%')   /* Filter for files to delete */
+				[,'Name'];                             /* Create a list of file names */
 	
 	/* Loop over each file */
 	do file over fileNames;
@@ -224,7 +228,9 @@ proc cas;
 	table.fileInfo result=files / caslib=searchCaslib;
 
 	/* Obtain file nams from the dictionary table */
-	fileNames = files['FileInfo'].where(Name like 'warranty_claims%')[,'Name'];
+	fileNames = files['FileInfo']                      /* Access the  table */
+				.where(Name like 'warranty_claims%')   /* Filter for files to delete */
+				[,'Name'];                             /* Create a list of file names */
 	
 	/* Delete each file */
 	if dim(fileNames) > 0 then do;

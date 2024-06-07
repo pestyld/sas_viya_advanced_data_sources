@@ -35,7 +35,7 @@
 /* Caslib Overview */
 %showImage("&path/images/03_caslibs.png")
 
-/* SAS Viya data access */
+/* SAS Viya data access overview */
 %showImage("&path/images/04_caslibs_libnames.png")
 
 
@@ -45,6 +45,11 @@
 ******************************************/
 /* View all available caslibs */
 caslib _all_ list;
+
+/* This method is cleaner */
+proc cas;
+	table.caslibInfo;
+quit;
 
 /* View files in the samples caslib */
 proc casutil;
@@ -166,8 +171,8 @@ proc cas;
 		saveFileAs = cats('casl_warranty_claims.',type);
 
 		table.save / 
-			table=castbl,                                    /* Input cas table  */
-			name=saveFileAs, caslib='casuser' replace=TRUE;  /* Output file */
+			table=castbl,                                     /* Input cas table  */
+			name=saveFileAs, caslib='casuser', replace=TRUE;  /* Output file */
 	end;
 
 	/* View files in the Casuser caslib */

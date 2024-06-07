@@ -94,9 +94,12 @@ options mprint;
 		
 		/* Pull the file name to load from the list and create CAS table name */
 		data _null_;
-			loadFile = scan("&filesToLoad",&file,',');
-			casTableName = tranwrd(loadFile,'.','_');
+			/* File to load */
+			loadFile = scan("&filesToLoad",&file,',');     
 			call symputx('loadFile',loadFile);
+
+			/* CAS table name (replace . with _) */
+			casTableName = tranwrd(loadFile,'.','_');      
 			call symputx('casTableName',casTableName);
 		run;
 		%put NOTE:**********************************************;
@@ -189,9 +192,6 @@ options mprint;
 
 
 
-
-
-
 /******************************************
  4. Loading files using CASL     
 ******************************************/
@@ -199,7 +199,7 @@ options mprint;
 /* Get list of files */
 proc cas;
 	searchCaslib = 'casuser';
-	table.fileInfo result=files / caslib=searchCaslib;
+	table.fileInfo result=files / caslib=searchCaslib; /* Stores the results in a dictionary named files */
 
 	/* View dictionary returned */
 	print files;
@@ -213,22 +213,30 @@ proc cas;
 	table.fileInfo result=files / caslib=searchCaslib;
 
 	/* Obtain file nams from the dictionary table */
-	fileNames = files['FileInfo'].where(Name like 'casl_warranty_claims%')[,'Name'];
+	fileNames = files['FileInfo']                            /* Access the table */
+				.where(Name like 'casl_warranty_claims%')    /* Filter for casl_warranty_claims... */
+				[,'Name'];                                   /* Select all rows and only the column Name in a list */
 	print fileNames;
 quit;
 
 
-/* Loop over each filename */
+/* Loop over each filename and create the CAS table name */
 proc cas;
 	searchCaslib = 'casuser';
 	table.fileInfo result=files / caslib=searchCaslib;
 
 	/* Obtain file nams from the dictionary table */
-	fileNames = files['FileInfo'].where(Name like 'casl_warranty_claims%')[,'Name'];
+	fileNames = files['FileInfo']                            /* Access the table */
+				.where(Name like 'casl_warranty_claims%')    /* Filter for casl_warranty_claims... */
+				[,'Name'];                                   /* Select all rows and only the column Name in a list */
 	
 	/* Loop over each file */
 	do file over fileNames;
-		print file;
+
+		/* File name */
+		print 'FILE NAME: ' || file;
+	
+		/* CAS table name */
 		casTableName = tranwrd(file,'.','_');
 		print 'CAS TABLE NAME: ' || casTableName;
 	end;
@@ -242,7 +250,9 @@ proc cas;
 	table.fileInfo result=files / caslib=searchCaslib;
 
 	/* Obtain file nams from the dictionary table */
-	fileNames = files['FileInfo'].where(Name like 'casl_warranty_claims%')[,'Name'];
+	fileNames = files['FileInfo']                            /* Access the table */
+				.where(Name like 'casl_warranty_claims%')    /* Filter for casl_warranty_claims... */
+				[,'Name'];                                   /* Select all rows and only the column Name in a list */
 
 	/* Load each file */
 	if dim(fileNames) > 0 then do;
@@ -251,17 +261,17 @@ proc cas;
 			print (NOTE) 'LOADING FILE: ' || file;     /* (NOTE) is not valid in Viya 3.5 */
 
 			casTableName = tranwrd(file,'.','_');
-			print (NOTE) 'CREATING CAS TABLE: ' || casTableName;
+			print (NOTE) 'CAS TABLE NAME: ' || casTableName;
 
 			table.loadTable / 
-				path=file, caslib='casuser',
-				casout={name=casTableName, 
+				path=file, caslib='casuser',  /* File to load */
+				casout={name=casTableName,    /* CAS table name */
 						caslib='casuser', 
 						replace=TRUE};
 		end;
 	end;
 	else;
-		print (NOTE) "No files exist in the caslib";
+		print (WARNING) "No files exist in the caslib";
 	end;
 
 	/* View in-memory tables */

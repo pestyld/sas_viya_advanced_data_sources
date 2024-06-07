@@ -3,7 +3,7 @@
 *****************************************************************************
  REQUIREMENTS: 
 	- SAS VIYA MUST BE ENABLED TO DOWNLOAD DATA FROM THE INTERNET  
-	- Must run the workshop.utility_macros_func/utility_macros.sas program prior
+	- Must run the workshop_folder/utility/utility_macros.sas program prior
 *****************************************************************************
  Creates the following files in the workshop/data folder
 - cars.sas7bdat

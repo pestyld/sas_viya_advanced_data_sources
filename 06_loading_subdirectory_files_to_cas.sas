@@ -1,5 +1,5 @@
 /*************************************************************************************************
- LOAD A SERIES OF FILES INTO A SUBDIRECTORY INTO A SINGLE CAS TABLE
+ LOAD A SERIES OF FILES INTO FROM A SUBDIRECTORY INTO A SINGLE CAS TABLE
 **************************************************************************************************
  REQUIREMENTS: 
 	- Must run the workshop/utility/utility_macros.sas program prior
@@ -56,13 +56,13 @@ proc casutil;
 quit;
 
 
-/* Load all CSV files in a directory */
+/* Load all CSV files from a directory in a single step */
 proc casutil;
 	load casdata="multiple_files" incaslib="casuser"           /* Specify the subdirectory name (multiple_files) and the input caslib name */
 		 importoptions=(fileType='CSV',                        /* Specify the import options for the CSV files */
 						multifile=TRUE,
-                        showFile=TRUE,
-						showPath=TRUE)        
+                        showFile=TRUE,                         /* Creates a column with the file name */
+						showPath=TRUE)                         /* Creates a column name with the path */
 		 casout='all_csv_files' outcaslib='casuser' replace;   /* Output cas table information */
 
 	/* View the in-memory table */
@@ -70,7 +70,9 @@ proc casutil;
 quit;
 
 
-/* View the new CAS table */
+/************************** 
+ View the new CAS table 
+**************************/
 
 /* Create a libref to the caslib using the CAS engine to use SAS code */
 libname casuser cas caslib='casuser';
@@ -82,6 +84,8 @@ proc freqtab data=casuser.all_csv_files;
 	tables Model_Year path fileName;
 quit;
 
+
+/* Delete a single file in a subdirectory */
 proc cas;
 	table.deleteSource / source='multiple_files/warranty_claims_2019.csv' caslib='casuser';
 quit;
@@ -91,7 +95,6 @@ quit;
 - I use CASL here. You can use PROC CASUTIL with a macro program if you prefer
 ****************************************************************/
 proc cas;
-
 	subDirectoryName = 'multiple_files';
 
 	/* Get a list of files in the subdirectory */
@@ -102,7 +105,7 @@ proc cas;
 	/* Access the table in the files dictionary and get a list of files */
 	fileNamesInSubdirectory = files['FileInfo'][,'Name'];
 	print '*******************************';
-	print fileNamesInSubdirectory;
+	print 'Files to delete: ' || fileNamesInSubdirectory;
 	print '*******************************';
 	/* Delete each file */
 	do file over fileNamesInSubdirectory;
