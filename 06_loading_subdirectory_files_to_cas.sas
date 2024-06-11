@@ -1,6 +1,6 @@
-/*************************************************************************************************
- LOAD A SERIES OF FILES INTO FROM A SUBDIRECTORY INTO A SINGLE CAS TABLE
-**************************************************************************************************
+/****************************************************************************
+ LOAD A SERIES OF FILES FROM A SUBDIRECTORY INTO A SINGLE CAS TABLE
+*****************************************************************************
  REQUIREMENTS: 
 	- Must run the workshop/utility/utility_macros.sas program prior
 	- Must run the 05_create_cas_subdirectory_files.sas program to create data
@@ -47,6 +47,7 @@ quit;
 - The file names must end with a .csv suffix.
 - The CSV files must have the same number of columns and the columns must have the same data type.
 ****************************************************************/
+
 /* Load a single CSV file */
 proc casutil;
 	load casdata="multiple_files/warranty_claims_2019.csv" incaslib="casuser"               
@@ -54,6 +55,9 @@ proc casutil;
 
 	list tables incaslib='casuser';
 quit;
+
+/* I don't want to have to loop over this for every file. Even though I can! */
+
 
 
 /* Load all CSV files from a directory in a single step */
@@ -85,15 +89,20 @@ proc freqtab data=casuser.all_csv_files;
 quit;
 
 
-/* Delete a single file in a subdirectory */
-proc cas;
-	table.deleteSource / source='multiple_files/warranty_claims_2019.csv' caslib='casuser';
-quit;
+
 
 /****************************************************************
  3. DELETE ALL FILES IN SUBDIRECTORY   
 - I use CASL here. You can use PROC CASUTIL with a macro program if you prefer
 ****************************************************************/
+
+/* Delete a single file in a subdirectory */
+proc cas;
+	table.deleteSource / source='multiple_files/warranty_claims_2019.csv' caslib='casuser';
+quit;
+
+
+/* Delete all files in a subdirectory */
 proc cas;
 	subDirectoryName = 'multiple_files';
 

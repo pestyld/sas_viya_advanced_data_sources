@@ -152,6 +152,34 @@ libname myjson clear;
 /********************************
  5. READ DATABASE DATA (SNOWFLAKE)
 *********************************/
+
+/*
+ GET AUTHORIZATION INFORMATION
+*/
+%let home = %SYSGET(HOME);
+
+/* Specify the credentials JSON file */
+filename myauth "&home/keys/snow_creds.json";
+
+/* Read the JSON file into SAS */
+libname myauth json fileref=myauth;
+
+/* Create variables to store the authentication information */
+data _NULL_;
+    set myauth.root;
+    call symputx('account_url',account_url);
+    call symputx('user_name', userName);
+    call symputx('password',password);
+run;
+
+/* Clear the connection to the JSON file */
+libname myauth clear;
+
+
+
+/*
+ CONNECT TO SNOWFLAKE
+*/
 options nonotes;
 libname snowssd SNOW server="&account_url"
                      user="&user_name"
@@ -160,6 +188,8 @@ libname snowssd SNOW server="&account_url"
                      database=SNOWFLAKE_SAMPLE_DATA
                      schema=TPCH_SF10;
 option notes;
+
+
 
 
 /* View extra information in the log when working with an external database */

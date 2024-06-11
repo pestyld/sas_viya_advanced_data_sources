@@ -2,7 +2,7 @@ proc cas;
 	function save_multiple_formats(tableName, inputCaslib, filetypes);
 /*
 Creates a series of flat files based on the specified fileType in the csv_file_blogs subdirectory
-named warranty_claims.<file extension>
+named warranty_claims.<file extension>.
 
 args:
 	tableName (str)  : Specify the CAS table name.
@@ -25,6 +25,8 @@ returns:
 				name=saveFileAs, caslib='casuser', replace=TRUE;  /* Output cas table */
 		end;
 	end;
+
+
 
 
 

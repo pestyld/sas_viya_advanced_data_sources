@@ -22,7 +22,6 @@
  1. PATH FOR THE WORKSHOP FOLDER      
 ******************************************/
 %getcwd(path)
-%put &=path;
 
 
 
@@ -87,6 +86,11 @@ quit;
 
 options mprint;
 
+
+/******************** 
+ First iteration 
+********************/
+
 /* Using the SAS macro language */
 %macro create_cas_files(createFileTypes);
 /*
@@ -107,12 +111,49 @@ options mprint;
 			fileType = scan(&createFileTypes,&i,',');
 			call symputx('fileType',fileType);
 		run;
-		%put &=fileType;
+		%put NOTE: *******************************;
+		%put NOTE: &=fileType;
+		%put NOTE: *******************************;
+
+   	%end;
+%mend;
+
+%create_cas_files(createFileTypes="csv,parquet,sas7bdat,sashdat")
+
+
+
+/******************** 
+ Final macro 
+********************/
+
+/* Using the SAS macro language */
+%macro create_cas_files(createFileTypes);
+/*
+	Example argument: createFileTypes="csv,parquet,sas7bdat,sashdat"
+*/
+
+	/* Count the total number of items in the list and store in a macro variable */
+	data _null_;
+		total_n=countw(&createFileTypes,',');
+		call symputx('total_n',total_n);
+	run;
+	%put &=total_n;
+
+	/* Loop over the file types */
+	%do i=1 %to &total_n;
+	
+		data _null_;
+			fileType = scan(&createFileTypes,&i,',');
+			call symputx('fileType',fileType);
+		run;
+		%put NOTE: *******************************;
+		%put NOTE: &=fileType;
+		%put NOTE: *******************************;
 
 		/* Save each file type to casuser */
 		proc casutil;
 			save casdata='warranty_claims' incaslib='casuser' 
-		 		 casout="warranty_claims.&fileType" outcaslib='casuser'
+		 		 casout="warranty_claims.&fileType" outcaslib='casuser'   /* Save as this file type */
 		 		 replace;
 		quit;
    	%end;
@@ -124,6 +165,7 @@ options mprint;
 %mend;
 
 %create_cas_files(createFileTypes="csv,parquet,sas7bdat,sashdat")
+
 
 options nomprint;
 

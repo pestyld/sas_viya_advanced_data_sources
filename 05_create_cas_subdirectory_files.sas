@@ -2,7 +2,6 @@
  CREATE A SERIES OF CSV FILES IN A SUBDIRECTORY IN THE CASUSER CASLIB
  - Creates a subdirectory named multiple_files in the Casuser caslib
  - Creates multiple CSV files
- - Creates multiple parquet files
 **************************************************************************************************
  REQUIREMENTS: 
 	- Must run the workshop/utility/utility_macros.sas program prior
@@ -12,7 +11,7 @@
 *****************************************************************************/
 
 %getcwd(path)
-%put &=path;
+
 
 /******************************************
  a. Load the sample file into memory in CAS 

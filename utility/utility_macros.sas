@@ -1,7 +1,18 @@
+/*********************************************************
+ UTILITY MACROS
+*********************************************************/
 
+
+
+/******************************************
+ FIND PATH FOR THE PROJECT FOLDER    
+******************************************/
 /* 
 	Dynamically finds the current directory path based on where the program is saved and stores it in 
     the path macro variable. Valid in SAS Studio.  
+
+    Parameter:
+        variable - specify the name of the macro variable you want to use. No quotes.
 */
 %macro getcwd(variable);
 	%global &variable;
@@ -11,11 +22,21 @@
 
 	%let &variable=&current_path;
 	
+	%let &variable=&current_path;
+	%PUT NOTE: *****************************************************;
+	%PUT NOTE: Current directory path: &current_path;
+	%PUT NOTE: *****************************************************;
+
 %mend;
 
 
 
 
+
+
+/******************************************
+ DISPLAY IMAGE
+******************************************/
 /* 
     The macro renders images in the SAS notebook or SAS results.
 

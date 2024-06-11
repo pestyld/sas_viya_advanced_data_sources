@@ -21,7 +21,6 @@
  1. PATH FOR THE WORKSHOP FOLDER      
 ******************************************/
 %getcwd(path)
-%put &=path;
 
 
 
@@ -33,7 +32,7 @@
 *********************************************************************/
 
 /* Modify the path here to the location of your PDF files if you have them in a different location */
-*caslib my_pdfs path="path-to-folder/PDF_files" subdirs;
+/*caslib my_pdfs path="path-to-folder/PDF_files" subdirs; */
 
 /* View all files in the my_pdfs caslib. 3 PDF files should exist. */
 proc casutil;
@@ -44,7 +43,7 @@ quit;
 /* Read in all of the PDF files in the caslib as a single CAS table */
 /* Each PDF will be one row of data in the CAS table                */
 proc casutil;
-    load casdata='PDF_files'                     /* To read in all files use an empty string. For a single PDF file specify the name and extension */
+    load casdata='PDF_files'                     /* For a single PDF file specify the name and extension */
          incaslib='casuser'                      /* The location of the PDF files to load */
          importoptions=(fileType="document"      /* Specify document import options   */
                         fileExtList = 'PDF' 
@@ -61,12 +60,12 @@ run;
 
 
 /**************************************************
-Using native CAS Language (CASL) - OPTIONAL     
+ Using native CAS Language (CASL) - OPTIONAL     
 **************************************************
-The CASUTIL procedure uses the loadTable        
-action through the CAS engine behind the scenes.
-Instead of using CASUTIL you can call the action
-directly. See below.                           
+ The CASUTIL procedure uses the loadTable        
+ action through the CAS engine behind the scenes.
+ Instead of using CASUTIL you can call the action
+ directly. See below.                           
 **************************************************/
 
 /* proc cas; */
@@ -90,7 +89,8 @@ directly. See below.
 
 
 /*****************************************************************************
- 3. CLEAN THE UNSTRUCTURED DATA                                             
+ 3. CLEAN THE UNSTRUCTURED DATA    
+******************************************************************************                                         
  The data is small, so all processing will be done using the SAS9 Compute server.
  No CAS required. For larger files or advanced analytics you might want to use the CAS server
 ******************************************************************************
@@ -244,12 +244,12 @@ proc print data=work.final_pdf_data label;
 run;
 
 
+
 /************************************************************
  Load the file to another location to create a dashboard 
 *************************************************************
  Multiple ways to do this:
-	- 1. Create the final table in a library accessible to the CAS server already, not WORK.
-	  This technique is better for larger data.
+	- 1. Create the final table in a library that's accessible to the CAS server already, not WORK. This technique is better for larger data.
 	- 2. Simply load the SAS7BDAT file to CAS and save it back to disk in any file format you wish.
 ************************************************************/
 

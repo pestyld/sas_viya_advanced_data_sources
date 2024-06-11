@@ -80,7 +80,7 @@ options mprint;
 	%put NOTE: LIST OF FILES TO LOAD: &=filesToLoad;
 	%put NOTE:**********************************************;
 	
-	/* Count total number of files to delete */
+	/* Count total number of files to load */
 	data _null_;
 		total_files = countw("&filesToLoad",',');
 		call symputx('total_files', total_files);
@@ -89,7 +89,7 @@ options mprint;
 	%put NOTE: TOTAL FILES TO LOAD: &=total_files;
 	%put NOTE:**********************************************;
 
-	/* Loop over the list of files to delete */
+	/* Loop over the list of files to load */
 	%do file=1 %to &total_files;
 		
 		/* Pull the file name to load from the list and create CAS table name */
@@ -118,7 +118,6 @@ options mprint;
 /******************
  b. Final macro
 ******************/
-options mprint;
 
 %macro loadFiles(caslib);
 

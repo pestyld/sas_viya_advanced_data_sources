@@ -13,7 +13,6 @@
  1. PATH FOR THE WORKSHOP FOLDER      
 ******************************************/
 %getcwd(path)
-%put &=path;
 
 
 /******************************************
@@ -91,8 +90,6 @@ options mprint;
 
 
 %deleteFiles(caslib='casuser', fileNameLike='casl_warranty_claims%')
-
-
 
 
 
