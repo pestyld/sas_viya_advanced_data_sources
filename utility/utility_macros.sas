@@ -54,6 +54,9 @@
 
 
 
+/******************************************
+ DELETE CSV SUBDIRECTORY AND FILES
+******************************************/
 /* 
     The macro deletes the CSV subdirectory created in this workshop
 

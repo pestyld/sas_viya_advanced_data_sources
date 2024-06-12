@@ -1,3 +1,13 @@
+/****************************************************************************
+ CREATE A TABLE OF ALL AVAILABLE DATA SOURCE FILES IN THE SPECIFIED CASLIB
+- Creates a SAS data set with all available files in the caslibs.
+- Creates a CAS table with all available files in the calsibs.
+*****************************************************************************
+ Copyright © 2024, SAS Institute Inc., Cary, NC, USA.  All Rights Reserved.
+ SPDX-License-Identifier: Apache-2.0                                       
+*****************************************************************************/
+
+
 
 /************************************************************************************
 1. First iteration - Loop over specified caslib and check if they exist 
