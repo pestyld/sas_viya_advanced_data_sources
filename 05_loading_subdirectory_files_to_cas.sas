@@ -21,6 +21,10 @@
 	   -- warranty_claims_2018.csv                            
 	   -- warranty_claims_2019.csv                                                   
 ****************************************************/
+/* This will create a subdirectory in the Casuser caslib with a series of CSV files as show above. */
+%getcwd(path)
+%include "&path/05b_create_cas_subdirectory_files.sas";
+
 
 
 /******************************************
