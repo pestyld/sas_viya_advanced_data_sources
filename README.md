@@ -5,6 +5,9 @@ Macro programs and code provided as is.
 ## Requirements
 - Access to SAS Viya.
 
+## Duration
+- About 3 hours
+
 ## Description
 In this workshop, participants will learn a comprehensive set of dynamic techniques for accessing and manipulating data from various sources, as well as performing data engineering tasks in the SAS Viya Platform. 
 
