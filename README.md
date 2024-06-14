@@ -55,7 +55,7 @@ Here's a breakdown of the key topics covered:
 ## Workshop Notes
 Most of the this workshop should run in your SAS Viya environment as is. Based on your setup there will be a few modifications required.
 1. To connect to Snowflake you will have to use your own connection information (or other database).
-2. When working with PDF files in program **07_extract_text_from_pdfs.sas**, they will need to be placed in a location that CAS can access. Notes are in the program to help guide. you.
+2. When working with PDF files in program **07_extract_text_from_pdfs.sas**, they will need to be placed in a location that CAS can access. Notes are in the program to help guide you.
 
 
 ## Folder descriptions
